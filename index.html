@@ -3,30 +3,31 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Plastic Ecobot -Avoiding Plastic Use chatbot </title>
+<title>PlasticBot - Reduce Plastic Use</title>
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
+<link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/PlasticBot.ico') }}">
 </head>
 <body>
 <header>
-<h1>Plastic Ecobot</h1>
-<p>Your Avoiding Plastic Use chatbot</p>
+<h1>PlasticBot</h1>
+<p>Your Assistant to Reduce Plastic Use</p>
 </header>
 <main>
 <section class="intro">
-<h2>Welcome to Plastic Ecobot!</h2>
-<p>Learn how to reduce plastic use with personalized advice and actionable steps.</p>
+<h2>Welcome to PlasticBot!</h2>
+<p>Learn how to reduce your plastic use with personalized advice and actionable steps.</p>
 </section>
 <section class="chatbot">
 <div id="chatContainer"></div>
 <div class="input-container">
-    <input type="text" id="messageInput" placeholder="Type here like how to reduce Plastic use">
-    <button id="sendButton">Send</button>
+<input type="text" id="messageInput" placeholder="Type here like how to reduce plastic use">
+<button id="sendButton">Send</button>
 </div>
 </section>
 </main>
 <footer>
-<p>&copy; 2024 Plastic Ecobot. All rights reserved to Renuka.</p>
+<p>&copy; 2024 PlasticBot. All rights reserved.</p>
 </footer>
-<script src="/static/js/script.js"></script>
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>

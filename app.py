@@ -1,67 +1,75 @@
 from flask import Flask, request, jsonify, render_template
 import requests
+import os
 import logging
-import certifi  # Library to provide Mozilla's CA Bundle
-
+import io
+ 
 app = Flask(__name__)
-
-# Azure OpenAI details
-AZURE_OPENAI_ENDPOINT = "https://openai.azure.com/"  # Replace with your Azure OpenAI endpoint
-AZURE_OPENAI_API_KEY = "API Key"  # Replace with your Azure OpenAI API key
-
-# Set up logging
-logging.basicConfig(level=logging.INFO)  # Change to DEBUG for more detailed logs
-
+ 
+# Load configuration from environment variables
+AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT", "default_endpoint")
+AZURE_OPENAI_API_KEY = os.getenv("AZURE_OPENAI_API_KEY", "default_api_key")
+ 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+ 
+def create_embeddings(document_content):
+    if document_content:
+        # Logic to create embeddings
+        return "embeddings"
+    return None
+ 
+def rag_technique(question):
+    if question == "irrelevant question":
+        return None
+    # Logic to retrieve relevant information
+    return "relevant information"
+ 
 @app.route('/')
 def index():
     return render_template('index.html')
-
+ 
+@app.route('/upload', methods=['POST'])
+def upload_document():
+    file = request.files.get('file')
+    if file and file.read():
+        # Logic to save the file
+        return jsonify({'message': 'Document uploaded successfully'}), 200
+    return jsonify({'error': 'No file content provided'}), 400
+ 
 @app.route('/api/messages', methods=['POST'])
 def api_messages():
     try:
         user_message = request.json.get('message')
         if not user_message:
+            logging.error("No message provided")
             return jsonify({"error": "No message provided"}), 400
-
+ 
         headers = {
             "Content-Type": "application/json",
-            "api-key": AZURE_OPENAI_API_KEY  # Changed from Authorization to api-key
+            "api-key": AZURE_OPENAI_API_KEY
         }
         data = {
             "messages": [{"role": "user", "content": user_message}]
         }
-
-        # Perform the POST request with SSL verification
+ 
         response = requests.post(
-            f"https://hv-openai-lab68.openai.azure.com/openai/deployments/Plastic_Boat/chat/completions?api-version=2024-02-15-preview",
-            json=data,
-            headers=headers,
-            verify=certifi.where()  # Use certifi's CA Bundle for SSL verification
-        )
-
+            f"{AZURE_OPENAI_ENDPOINT}/openai/deployments/PlasticBot/chat/completions?api-version=2024-05-01-preview",
+            json=data, headers=headers)
+ 
         if response.status_code == 200:
             response_data = response.json()
             bot_response = response_data['choices'][0]['message']['content']
             return jsonify({"response": bot_response})
         else:
             error_message = f"Error from Azure OpenAI: {response.status_code} {response.text}"
-            logging.error(error_message)  # Log the error message
+            logging.error(error_message)
             return jsonify({"error": "Failed to get a response from Azure OpenAI"}), response.status_code
-    except requests.exceptions.SSLError as ssl_err:
-        # Handle SSL-specific errors
-        error_message = f"SSL Error: {str(ssl_err)}"
-        logging.error(error_message)  # Log the SSL error
-        return jsonify({"error": "SSL Certificate Verification Failed"}), 500
-    except requests.exceptions.RequestException as req_err:
-        # Handle other request-related errors
-        error_message = f"Request Error: {str(req_err)}"
-        logging.error(error_message)  # Log the request error
-        return jsonify({"error": "Request Failed"}), 500
     except Exception as e:
-        # Handle other unexpected errors
         error_message = f"Exception: {str(e)}"
-        logging.error(error_message)  # Log the exception
+        logging.exception(error_message)
         return jsonify({"error": "Internal Server Error"}), 500
-
+ 
 if __name__ == "__main__":
-    app.run(port=5000, debug=True)
+    app.run(port=int(os.getenv("PORT", 5000)), debug=True)
+
